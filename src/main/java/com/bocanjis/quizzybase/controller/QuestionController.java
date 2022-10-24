@@ -25,16 +25,19 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<QuestionDto>> getQuestionById(@PathVariable String id) {
-        return questionService.findById(id).map(ResponseEntity::ok);
+        return questionService.findById(id)
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping
     public Mono<ResponseEntity<QuestionDto>> createQuestion(@RequestBody QuestionDto questionDto) {
-        return questionService.create(questionDto).map(ResponseEntity::ok);
+        return questionService.create(questionDto)
+                .map(ResponseEntity::ok);
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<QuestionDto>> updateQuestion(@PathVariable String id, @RequestBody QuestionDto questionDto) {
-        return questionService.update(id, questionDto).map(ResponseEntity::ok);
+        return questionService.update(id, questionDto)
+                .map(ResponseEntity::ok);
     }
 }
