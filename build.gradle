@@ -25,7 +25,6 @@ ext {
 sourceSets {
 	integration {
 		java.srcDir "$projectDir/src/integration/java"
-		resources.srcDir "$projectDir/src/integration"
 		compileClasspath += main.output + test.output
 		runtimeClasspath += main.output + test.output
 	}
