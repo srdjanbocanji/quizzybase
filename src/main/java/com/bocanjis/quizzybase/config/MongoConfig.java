@@ -24,4 +24,8 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
         return database;
     }
 
+    @Override
+    protected boolean autoIndexCreation() {
+        return true;
+    }
 }
