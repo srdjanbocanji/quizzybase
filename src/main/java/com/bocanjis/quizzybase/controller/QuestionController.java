@@ -1,5 +1,6 @@
 package com.bocanjis.quizzybase.controller;
 
+import com.bocanjis.quizzybase.dto.BatchInsertDto;
 import com.bocanjis.quizzybase.dto.QuestionDto;
 import com.bocanjis.quizzybase.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,11 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public Mono<ResponseEntity<List<QuestionDto>>> getAllQuestions() {
-        return questionService.getAllQuestions()
+    public Mono<ResponseEntity<List<QuestionDto>>> getQuestions(@RequestParam(defaultValue = "0", required = false) Integer page,
+                                                                @RequestParam(defaultValue = "10", required = false) Integer size,
+                                                                @RequestParam(required = false) String search,
+                                                                @RequestParam(required = false) List<String> categories) {
+        return questionService.getQuestions(page, size, search, categories)
                 .collectList()
                 .map(ResponseEntity::ok);
     }
@@ -32,6 +36,12 @@ public class QuestionController {
     @PostMapping
     public Mono<ResponseEntity<QuestionDto>> createQuestion(@RequestBody QuestionDto questionDto) {
         return questionService.create(questionDto)
+                .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/batch-insert")
+    public Mono<ResponseEntity<Void>> batchInsert(@RequestBody BatchInsertDto batchInsertDto) {
+        return questionService.batchInsertQuestions(batchInsertDto)
                 .map(ResponseEntity::ok);
     }
 

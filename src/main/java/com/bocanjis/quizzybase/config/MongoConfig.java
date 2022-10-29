@@ -23,4 +23,5 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
     protected String getDatabaseName() {
         return database;
     }
+
 }

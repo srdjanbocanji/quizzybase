@@ -2,15 +2,23 @@ package com.bocanjis.quizzybase.service;
 
 import com.bocanjis.quizzybase.conversion.QuestionMapper;
 import com.bocanjis.quizzybase.documents.Question;
+import com.bocanjis.quizzybase.dto.BatchInsertDto;
 import com.bocanjis.quizzybase.dto.QuestionDto;
 import com.bocanjis.quizzybase.repository.QuestionRepository;
+import com.bocanjis.quizzybase.util.QuestionCriteria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -20,10 +28,11 @@ public class QuestionService {
 
     private final QuestionMapper questionMapper;
     private final QuestionRepository questionRepository;
+    private final ReactiveMongoTemplate reactiveMongoTemplate;
 
-    public Flux<QuestionDto> getAllQuestions() {
-        log.debug("Getting all questions...");
-        return questionRepository.findAll()
+    public Flux<QuestionDto> getQuestions(Integer page, Integer size, String search, List<String> categories) {
+        return reactiveMongoTemplate.find(getQuestionsQuery(page, size, search, categories), Question.class)
+                .doOnNext(question -> log.debug("Found question {}...", question))
                 .map(questionMapper);
     }
 
@@ -49,5 +58,32 @@ public class QuestionService {
                 .map(question -> questionMapper.toQuestion(questionDto, question))
                 .flatMap(questionRepository::save)
                 .map(questionMapper);
+    }
+
+    public Mono<Void> batchInsertQuestions(BatchInsertDto questions) {
+        List<Question> items = questions.getItems()
+                .stream().map(questionMapper::toQuestion)
+                .filter(Objects::nonNull)
+                .filter(question -> Objects.nonNull(question.getAnswer()) && Objects.nonNull(question.getQuestion()))
+                .collect(Collectors.toList());
+        return Mono.just(items)
+                .flatMapMany(questionRepository::saveAll)
+                .doOnNext(item -> log.info("Saved question {}...", item))
+                .then();
+    }
+
+    private Query getQuestionsQuery(Integer page, Integer size, String search, List<String> categories) {
+        Query query = new Query();
+        Optional.ofNullable(search)
+                .map(value -> new Criteria()
+                        .orOperator(QuestionCriteria.questionContains(value),
+                                (QuestionCriteria.tagsContains(value))))
+                .ifPresent(query::addCriteria);
+        Optional.ofNullable(categories)
+                .filter(values -> !categories.isEmpty())
+                .map(QuestionCriteria::categoryContains)
+                .ifPresent(query::addCriteria);
+
+        return query.limit(size).skip(page * size);
     }
 }
