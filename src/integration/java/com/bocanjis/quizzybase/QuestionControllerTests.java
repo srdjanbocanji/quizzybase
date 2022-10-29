@@ -53,12 +53,12 @@ public class QuestionControllerTests extends BaseIntegrationTest {
 
     @Test
     void testGetQuestions_multipleCategories() {
-        client.get().uri("/questions?categories=Opsta kUltura,Istorija,sport")
+        client.get().uri("/questions?categories=Opsta kUltura,Istorija,Sport")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody()
                 .jsonPath("$").value(hasSize(8))
-                .jsonPath("$[0].question").isEqualTo("Koji motociklista je proslavio broj 46?")
+                .jsonPath("$[0].question").isEqualTo("KOJE GODINE SE DOGODIO MARSELjSKI ATENTAT NA KRALjA ALEKSANDRA KARAĐORĐEVIĆA?")
                 .jsonPath("$[2].answer").isEqualTo("MELANHOLIKE");
     }
 

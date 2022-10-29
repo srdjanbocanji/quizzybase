@@ -41,8 +41,6 @@ public class BaseIntegrationTest {
     @BeforeEach
     void setup() {
         client = WebTestClient.bindToApplicationContext(context).configureClient()
-                .exchangeStrategies(ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)).build())
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024 * 16))
                 .build();
         fillQuestionsData();
     }
