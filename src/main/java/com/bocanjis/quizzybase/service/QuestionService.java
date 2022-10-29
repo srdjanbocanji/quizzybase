@@ -30,8 +30,12 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final ReactiveMongoTemplate reactiveMongoTemplate;
 
-    public Flux<QuestionDto> getQuestions(Integer page, Integer size, String search, List<String> categories) {
-        return reactiveMongoTemplate.find(getQuestionsQuery(page, size, search, categories), Question.class)
+    public Flux<QuestionDto> getQuestions(Integer page,
+                                          Integer size,
+                                          String search,
+                                          List<String> categories,
+                                          boolean searchDescription) {
+        return reactiveMongoTemplate.find(getQuestionsQuery(page, size, search, categories, searchDescription), Question.class)
                 .doOnNext(question -> log.debug("Found question {}...", question))
                 .map(questionMapper);
     }
@@ -72,12 +76,10 @@ public class QuestionService {
                 .then();
     }
 
-    private Query getQuestionsQuery(Integer page, Integer size, String search, List<String> categories) {
+    private Query getQuestionsQuery(Integer page, Integer size, String search, List<String> categories, boolean searchDescription) {
         Query query = new Query();
         Optional.ofNullable(search)
-                .map(value -> new Criteria()
-                        .orOperator(QuestionCriteria.questionContains(value),
-                                (QuestionCriteria.tagsContains(value))))
+                .map(value -> getSearchCriteria(value, searchDescription))
                 .ifPresent(query::addCriteria);
         Optional.ofNullable(categories)
                 .filter(values -> !categories.isEmpty())
@@ -85,5 +87,14 @@ public class QuestionService {
                 .ifPresent(query::addCriteria);
 
         return query.limit(size).skip(page * size);
+    }
+
+    private Criteria getSearchCriteria(String search, boolean searchDescription) {
+        if(searchDescription) {
+            return new Criteria()
+                    .orOperator(QuestionCriteria.questionContains(search),
+                            (QuestionCriteria.tagsContains(search)));
+        }
+        return QuestionCriteria.tagsContains(search);
     }
 }

@@ -58,13 +58,13 @@ public class QuestionControllerTests extends BaseIntegrationTest {
                 .expectStatus().is2xxSuccessful()
                 .expectBody()
                 .jsonPath("$").value(hasSize(8))
-                .jsonPath("$[0].question").isEqualTo("KOJE GODINE SE DOGODIO MARSELjSKI ATENTAT NA KRALjA ALEKSANDRA KARAĐORĐEVIĆA?")
+                .jsonPath("$[0].question").isEqualTo("Koji motociklista je proslavio broj 46?")
                 .jsonPath("$[2].answer").isEqualTo("MELANHOLIKE");
     }
 
     @Test
     void testGetQuestions_searchCriteria() {
-        client.get().uri("/questions?search=reziser")
+        client.get().uri("/questions?search=reziser&searchDescription=true")
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody()

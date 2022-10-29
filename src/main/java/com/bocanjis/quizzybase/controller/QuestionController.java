@@ -20,9 +20,10 @@ public class QuestionController {
     @GetMapping
     public Mono<ResponseEntity<List<QuestionDto>>> getQuestions(@RequestParam(defaultValue = "0", required = false) Integer page,
                                                                 @RequestParam(defaultValue = "10", required = false) Integer size,
+                                                                @RequestParam(defaultValue = "false", required = false) Boolean searchDescription,
                                                                 @RequestParam(required = false) String search,
                                                                 @RequestParam(required = false) List<String> categories) {
-        return questionService.getQuestions(page, size, search, categories)
+        return questionService.getQuestions(page, size, search, categories, searchDescription)
                 .collectList()
                 .map(ResponseEntity::ok);
     }
