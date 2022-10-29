@@ -55,7 +55,7 @@ public class BaseIntegrationTest {
     void fillQuestionsData() {
       List<Question> questions = objectMapper.readValue(new ClassPathResource("questions.json").getFile(), new TypeReference<List<Question>>() {});
       reactiveMongoTemplate
-              .remove(new Query(), Question.class)
+              .dropCollection(Question.class)
               .then(reactiveMongoTemplate.insertAll(questions).collectList()).block();
     }
 }
